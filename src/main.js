@@ -12,19 +12,22 @@ const Menu = electron.Menu;
 const injectBundle = require('./inject-onload.js');
 const messageHandler = require('./message.js');
 
-const WINDOW_TITLE = 'Electronic WeChat';
+const WINDOW_TITLE = 'Electronic ticktick';
 
 let browserWindow = null;
 let appIcon = null;
 
 let createWindow = () => {
+  var size = electron.screen.getPrimaryDisplay().workAreaSize;
   browserWindow = new BrowserWindow({
     title: WINDOW_TITLE,
-    width: 800,
-    height: 600,
+    width: 300,
+    height: 400,
+    x: size.width - 300,
+    y: 20,
     resizable: true,
-    center: true,
-    show: true,
+    center: false,
+    show: false,
     frame: true,
     autoHideMenuBar: true,
     icon: 'assets/icon.png',
@@ -41,12 +44,7 @@ let createWindow = () => {
   browserWindow.webContents.setUserAgent("Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2227.1 Safari/537.36");
   //browserWindow.webContents.openDevTools();
 
-  browserWindow.loadURL("https://wx.qq.com/");
-
-  browserWindow.webContents.on('will-navigate', (ev, url) => {
-    if (/(.*wx.*\.qq\.com.*)|(web.wechat.com)/.test(url)) return;
-    ev.preventDefault();
-  });
+  browserWindow.loadURL("https://www.ticktick.com/#q/all/today");
 
   browserWindow.on('close', (e) => {
     if (browserWindow.isVisible()) {
@@ -104,16 +102,19 @@ ipcMain.on('log', (event, message) => {
 });
 
 ipcMain.on('reload', (event, message) => {
-  browserWindow.loadURL("https://wx.qq.com/");
+  browserWindow.loadURL("https://www.ticktick.com/#q/all/today");
 });
 
 let createTray = () => {
-  appIcon = new electron.Tray(path.join(__dirname, '../assets/icon20x20.png'));
+  appIcon = new electron.Tray(path.join(__dirname, '../assets/icon.png'));
   appIcon.setToolTip('Electronic WeChat');
 
   if (process.platform == "linux") {
     let contextMenu = Menu.buildFromTemplate([
-         {label: 'Show', click: () => browserWindow.show()},
+         {label: 'Show/hide', click: () => {
+           if (browserWindow.isVisible()) browserWindow.hide();
+           else browserWindow.show();}
+         },
          {label: 'Exit', click: () => app.exit(0)}
     ]);
     appIcon.setContextMenu(contextMenu);
